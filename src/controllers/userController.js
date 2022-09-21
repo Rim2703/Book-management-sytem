@@ -1,6 +1,6 @@
 const userModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
-const validation = require("../validator/validator")
+const {isVAlidEmail,isValidPassword,isValidPhone,isValid} = require("../validator/validator")
 
 const isValidreqbody = function (body) {
     return Object.keys(body).length > 0
@@ -8,28 +8,29 @@ const isValidreqbody = function (body) {
 
 const createUser = async function (req, res) {
     try {
+        if (Object.keys(req.body).length == 0) return res.status(400).send({ message: "Please provide data", error: "body can't be empty" })
 
-        let user = req.body;
-        if (Object.keys(user).length == 0) return res.status(400).send({ message: "Please provide data", error: "body can't be empty" })
+        let {title,name,phone,email,password} = req.body;
+        
+        if (!isValid(title)) return res.status(400).send({ status: false, message: "title is required" })
+        title= title.trim()
+        if (!["Mr", "Miss", "Mrs"].includes(title)) return res.status(400).send({ status: false, message: "title must be Mr ,Mrs ,Miss" })
 
-        if (!validation.isValid(user.title)) return res.status(400).send({ status: false, message: "title is required" })
-        if (!["Mr", "Miss", "Mrs"].includes(user.title)) return res.status(400).send({ status: false, message: "title must be Mr ,Mrs ,Miss" })
+        if (!isValid(name)) return res.status(400).send({ status: false, message: "Name is required , name must be string" })
 
-        if (!validation.isValid(user.name)) return res.status(400).send({ status: false, message: "Name is required , name must be string" })
+        if (!isValid(phone)) return res.status(400).send({ status: false, message: "Phone number is required" })
+        if (!isValidPhone(phone)) return res.status(400).send({ status: false, message: "enter valid number, number must in ten digit" })
 
-        if (!validation.isValid(user.phone)) return res.status(400).send({ status: false, message: "Phone number is required" })
-        if (!validation.isValidPhone(user.phone)) return res.status(400).send({ status: false, message: "enter valid number, number must in ten digit" })
+        if (!isValid(email)) return res.status(400).send({ status: false, message: "email is required" })
+        if (!isVAlidEmail(email)) return res.status(400).send({ status: false, message: "Please provide the valid email address" })
 
-        if (!validation.isValid(user.email)) return res.status(400).send({ status: false, message: "email is required" })
-        if (!validation.isVAlidEmail(user.email)) return res.status(400).send({ status: false, message: "Please provide the valid email address" })
+        if (!isValid(password)) return res.status(400).send({ status: false, message: "Password is required" })
+        if (!isValidPassword(password)) return res.status(400).send({ status: false, message: "password must be in 8 to 15 & password must contain uppercase lowercase and one special character" })
 
-        if (!validation.isValid(user.password)) return res.status(400).send({ status: false, message: "Password is required" })
-        if (!validation.isValidPassword(user.password)) return res.status(400).send({ status: false, message: "password must be in 8 to 15 & password must contain uppercase lowercase and one special character" })
-
-        let phone = await userModel.findOne({ phone: user.phone })
+        let phones = await userModel.findOne({ phone: phones })
         if (phone) return res.status(409).send({ status: false, message: "phone number is already exists" })
 
-        let email = await userModel.findOne({ email: user.email })
+        let emails = await userModel.findOne({ email: emails })
         if (email) return res.status(409).send({ status: false, message: "email is already exists" })
 
         let userCreated = await userModel.create(user);
@@ -38,7 +39,7 @@ const createUser = async function (req, res) {
         res.status(500).send({ status: false, error: err.message });
     }
 };
-
+//---------------------------------------LogIn-------------------------------------------------------//
 const userLogin = async function (req, res) {
     try {
         let data = req.body;
@@ -62,7 +63,7 @@ const userLogin = async function (req, res) {
 
         let token = jwt.sign(
             {
-                userId: user._id.toString(),
+                userId: _id.toString(),
                 exp: Math.floor(Date.now() / 1000) + (60 * 60)
             },
             "Project3-Group24"

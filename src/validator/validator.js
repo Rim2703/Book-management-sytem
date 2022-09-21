@@ -1,8 +1,16 @@
+const mongoose = require('mongoose')
+
 const isValid = function(value){
     if (typeof value === "undefined" || value === null) return false;
     if (typeof value === "string" && value.trim().length > 0) return true;
     return false;
 }
+const isValidId = function (Id) {
+    if (!mongoose.Types.ObjectId.isValid(Id)) {
+      return false
+    }
+    return (true)
+  }
 //------------------password regex------------------------------------------//
 const isValidPassword = function(password){
     return (/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/.test(password))
@@ -24,4 +32,4 @@ const isValidIsbn = function(ISBN){
 }
 
 
-module.exports = {isValid,isVAlidEmail,isValidPassword,isValidPhone,isValidIsbn}
+module.exports = {isValid,isVAlidEmail,isValidPassword,isValidPhone,isValidIsbn,isValidId}
