@@ -1,7 +1,8 @@
 const bookModel = require("../models/booksModel")
 const userModel = require("../models/userModel")
 const { isValidId, isValid, isValidIsbn } = require("../validator/validator")
-
+const mongoose = require('mongoose')
+const ObjectId =  mongoose.Types.ObjectId 
 
 //________________ Create Books ___________________//
 
@@ -36,7 +37,7 @@ const createBooks = async function (req, res) {
         if (!isValid(releasedAt)) return res.status(400).send({ status: false, message: "ReleasedAt should required, releaseAt should be in Date" })
 
 
-        let bookcreate = await bookModel.create(books)
+        let bookcreate = await bookModel.create(req.body)
         res.status(201).send({ status: true, message: "Success", data: bookcreate })
 
 
@@ -80,12 +81,12 @@ const getBooksId = async function (req, res) {
     try {
         let bookId = req.params.bookId
         if (!isValidId(bookId)) {
-            return res.status(400).send({ status: false, message: "enter valid book id" })
+            return res.status(400).send({ status: false, message: "Enter valid book Id" })
         }
 
         let books = await bookModel.findOne({ _id: bookId, isDeleted: false })
         if (!books) {
-            return res.status(404).send({ status: false, message: "book not found" })
+            return res.status(404).send({ status: false, message: "Book not found" })
         }
 
         return res.status(200).send({ status: true, message: 'Books list', data: books })
