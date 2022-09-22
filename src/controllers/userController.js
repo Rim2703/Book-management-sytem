@@ -6,40 +6,44 @@ const isValidreqbody = function (body) {
     return Object.keys(body).length > 0
 }
 
-const createUser = async function (req, res) {
-    try {
-        if (Object.keys(req.body).length == 0) return res.status(400).send({ message: "Please provide data", error: "body can't be empty" })
+//___________________________________________ Create User _________________________________________________________//
 
-        let {title,name,phone,email,password} = req.body;
+
+const createUser = async function (req, res) {
+    try { 
+        let user = req.body
+        if (Object.keys(user).length == 0) return res.status(400).send({ message: "Please provide data", error: "body can't be empty" })
+
+        let {title,name,phone,email,password} = user;
         
         if (!isValid(title)) return res.status(400).send({ status: false, message: "title is required" })
-        title= title.trim()
+        
         if (!["Mr", "Miss", "Mrs"].includes(title)) return res.status(400).send({ status: false, message: "title must be Mr ,Mrs ,Miss" })
 
         if (!isValid(name)) return res.status(400).send({ status: false, message: "Name is required , name must be string" })
 
         if (!isValid(phone)) return res.status(400).send({ status: false, message: "Phone number is required" })
-        if (!isValidPhone(phone)) return res.status(400).send({ status: false, message: "enter valid number, number must in ten digit" })
+        if (!isValidPhone(phone)) return res.status(400).send({ status: false, message: "Enter valid number, number must in ten digit" })
+        let phones = await userModel.findOne({ phone: phone })
+        if (phones) return res.status(409).send({ status: false, message: "Phone number is already exists" }) 
 
         if (!isValid(email)) return res.status(400).send({ status: false, message: "email is required" })
         if (!isVAlidEmail(email)) return res.status(400).send({ status: false, message: "Please provide the valid email address" })
+        let emails = await userModel.findOne({ email: email })
+        if (emails) return res.status(409).send({ status: false, message: "email is already exists" })
 
         if (!isValid(password)) return res.status(400).send({ status: false, message: "Password is required" })
         if (!isValidPassword(password)) return res.status(400).send({ status: false, message: "password must be in 8 to 15 & password must contain uppercase lowercase and one special character" })
-
-        let phones = await userModel.findOne({ phone: phones })
-        if (phone) return res.status(409).send({ status: false, message: "phone number is already exists" })
-
-        let emails = await userModel.findOne({ email: emails })
-        if (email) return res.status(409).send({ status: false, message: "email is already exists" })
 
         let userCreated = await userModel.create(user);
         res.status(201).send({ status: true, message: "Success", data: userCreated });
     } catch (err) {
         res.status(500).send({ status: false, error: err.message });
     }
-};
-//---------------------------------------LogIn-------------------------------------------------------//
+}
+//_____________________________________________ Login ___________________________________________________________//
+
+
 const userLogin = async function (req, res) {
     try {
         let data = req.body;
@@ -48,22 +52,24 @@ const userLogin = async function (req, res) {
         }
 
         const { email, password } = data
+
         if (!(email)) {
             return res.status(400).send({ status: false, message: "Email is required!!" })
         }
         let user = await userModel.findOne({ email: email });
-        if (!user) return res.status(401).send({ status: false, message: "email is not correct, Please provide valid email" });
+        if (!user) return res.status(401).send({ status: false, message: "Email is not correct, Please provide valid email" });
 
         if (!(password)) {
             return res.status(400).send({ status: false, message: "Password is required!!" })
         }
         let pass = await userModel.findOne({ password: password });
-        if (!pass) return res.status(401).send({ status: false, message: "password is not correct, Please provide valid password" });
+        if (!pass) return res.status(401).send({ status: false, message: "Password is not correct, Please provide valid password" });
 
+        let userid = await userModel.findOne({ email:email , password:password })
 
         let token = jwt.sign(
             {
-                userId: _id.toString(),
+                userId: userid._id.toString(),
                 exp: Math.floor(Date.now() / 1000) + (60 * 60)
             },
             "Project3-Group24"
@@ -75,5 +81,6 @@ const userLogin = async function (req, res) {
         res.status(500).send({ status: false, Error: err.message });
     }
 }
+
 
 module.exports = { userLogin, createUser }
