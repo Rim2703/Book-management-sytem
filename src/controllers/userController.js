@@ -70,7 +70,7 @@ const userLogin = async function (req, res) {
         
         // check email for user
         let user = await userModel.findOne({ email: email });
-        if (!user) return res.status(401).send({ status: false, message: "Email is not correct, Please provide valid email" });
+        if (!user) return res.status(400).send({ status: false, message: "Email is not correct, Please provide valid email" });
 
         if (!(password)) {
             return res.status(400).send({ status: false, message: "Password is required!!" })
@@ -78,7 +78,7 @@ const userLogin = async function (req, res) {
 
         // check password of existing user
         let pass = await userModel.findOne({ password: password });
-        if (!pass) return res.status(401).send({ status: false, message: "Password is not correct, Please provide valid password" });
+        if (!pass) return res.status(400).send({ status: false, message: "Password is not correct, Please provide valid password" });
 
         let userid = await userModel.findOne({ email: email, password: password })
 
@@ -97,6 +97,5 @@ const userLogin = async function (req, res) {
         res.status(500).send({ status: false, Error: err.message });
     }
 }
-
 
 module.exports = { createUser, userLogin }

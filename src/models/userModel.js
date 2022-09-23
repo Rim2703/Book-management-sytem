@@ -33,8 +33,7 @@ const userSchema = new mongoose.Schema({
         street: String,
         city: String,
         pincode: String
-    },
-
+    }
 
 }, { timestamps: true })
 
