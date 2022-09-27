@@ -54,7 +54,7 @@ const createBooks = async function (req, res) {
         if (!isValid(subcategory)) return res.status(400).send({ status: false, message: "Subcategory is required ,Subcategory should be in string" })
 
         if (!isValid(releasedAt)) return res.status(400).send({ status: false, message: "ReleasedAt should required, releaseAt should be in Date" })
-        if (!isValidDate(releasedAt)) return res.status(400).send({ status: false, message: "Date is not valid!!" })
+        if (!isValidDate(releasedAt)) return res.status(400).send({ status: false, message: "reviewedAt should be (yyyy-mm-dd) format and enter valid month , day and year" })
 
         let bookcreate = await bookModel.create(req.body)
         res.status(201).send({ status: true, message: "Success", data: bookcreate })
@@ -160,6 +160,11 @@ const updateBooks = async function (req, res) {
         // unique ISBN
         let isbn = await bookModel.findOne({ ISBN: bookdata.ISBN, isDeleted: false })
         if (isbn) return res.status(400).send({ status: false, message: "given isbn Number already exit" })
+
+        if (releasedAt) {
+            if (!isValidDate(releasedAt))
+                return res.status(400).send({ status: false, message: "releaseAt should be (yyyy-mm-dd) format and enter valid month , day and year" })
+        }
 
         // Updating data in book document
         let updatedata = await bookModel.findOneAndUpdate({ _id: books, isDeleted: false },

@@ -40,7 +40,8 @@ const isValidIsbn = function (ISBN) {
 //-------------------------------- Date regex --------------------------------------------//
 
 const isValidDate = function (date) {
-    return (/^\d{4}-\d{2}-\d{2}$/).test(date)
+    // return (/^\d{4}-\d{2}-\d{2}$/).test(date)
+    return (/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/).test(date)
 }
 
 module.exports = { isValid, isVAlidEmail, isValidPassword, isValidPhone, isValidIsbn, isValidId, isValidDate }

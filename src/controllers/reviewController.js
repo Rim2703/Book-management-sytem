@@ -1,6 +1,6 @@
 const booksModel = require("../models/booksModel")
 const reviewModel = require("../models/reviewModel")
-const { isValid, isValidId } = require("../validator/validator")
+const { isValidId, isValidDate } = require("../validator/validator")
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
 
@@ -27,10 +27,14 @@ const createReviews = async function (req, res) {
         if (data.review) {
             if (typeof data.review == 'number') return res.status(400).send({ status: false, message: "Review must in letters." })
         }
-        console.log(typeof (data.review))
 
         //    current date of review 
-        data["reviewedAt"] = Date.now()
+        if (!data.reviewedAt) data["reviewedAt"] = Date.now()
+        if (data.reviewedAt) {
+            if (!isValidDate(data.reviewedAt)) return res.status(400).send({ status: false, message: "reviewedAt should be (yyyy-mm-dd) format and enter valid month , day and year" })
+            data["reviewedAt"] = data.reviewedAt
+        }
+        
         // reviewer name
         if (data.reviewedBy) {
             data["reviewedBy"] = data.reviewedBy
@@ -46,7 +50,8 @@ const createReviews = async function (req, res) {
         // rating only b/w in 1 to 5
         if (data.rating < 1 || data.rating > 5) return res.status(400).send({ status: false, message: "Please provide rating in between 1 to 5" })
 
-        data.bookId = bookId
+        // creating the ['bookId'] key and storing the bookId data 
+        data['bookId'] = bookId
         let createReview = await reviewModel.create(data)
         let reviews = await reviewModel.find({ bookId: bookId, isDeleted: false }).count()
 
@@ -55,6 +60,7 @@ const createReviews = async function (req, res) {
 
         // update reviews count in book document after recieved review
         book['reviews'] = reviews
+        await booksModel.findOneAndUpdate({_id: bookId, isDeleted: false}, {$set: {reviews: reviews}})
 
         res.status(201).send({ status: true, message: "Review created", data: book })
     }
@@ -92,9 +98,19 @@ const updateReview = async function (req, res) {
 
         let data = req.body
         if (data.review || data.rating || data.reviewedBy) {
+            //update the review data :-
             let updateReviews = await reviewModel.findOneAndUpdate({ _id: reviewId, bookId: bookId }, { $set: data }, { new: true })
+            // finding the book data form bookid params:-
             let book = await booksModel.findOne({ _id: bookId, isDeleted: false }).lean()
+            
+            // it is for current reviews number :-
+            let reviews = await reviewModel.find({ bookId: bookId, isDeleted: false }).count()
+             
+            // add(merge) reviewData key in book document :-
             book['reviewsData'] = updateReviews
+            // update reviews count in book document after recieved review :-
+            book['reviews'] = reviews
+           
             return res.status(200).send({ status: true, data: book })
         }
         else {

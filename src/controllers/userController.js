@@ -46,6 +46,8 @@ const createUser = async function (req, res) {
         // validation for password
         if (!isValidPassword(password)) return res.status(400).send({ status: false, message: "password must be in 8 to 15 & password must contain uppercase lowercase and one special character" })
 
+        if (typeof (user.address) !== "object") return res.status(400).send({ status: false, message: "address should be in object format" })
+
         // creating user
         let userCreated = await userModel.create(user);
         res.status(201).send({ status: true, message: "Success", data: userCreated });
@@ -67,7 +69,7 @@ const userLogin = async function (req, res) {
         if (!(email)) {
             return res.status(400).send({ status: false, message: "Email is required!!" })
         }
-        
+
         // check email for user
         let user = await userModel.findOne({ email: email });
         if (!user) return res.status(400).send({ status: false, message: "Email is not correct, Please provide valid email" });
@@ -91,7 +93,7 @@ const userLogin = async function (req, res) {
             "Project3-Group24"
         );
 
-        res.status(200).send({ status: true, message: "Success", token: token });
+        res.status(201).send({ status: true, message: "Success", data: token });
     }
     catch (err) {
         res.status(500).send({ status: false, Error: err.message });
