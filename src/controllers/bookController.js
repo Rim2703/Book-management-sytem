@@ -35,6 +35,7 @@ const createBooks = async function (req, res) {
         //_______________________________ check user regex _______________________________________//
 
         if (!isValidId(userId)) return res.status(400).send({ status: false, message: "enter valid user id" })
+        if(req.userId != books.userId) return res.status(403).send({status: false, message: "You are unauthorize person!!"})
 
         //_______________________________ dublicate userId or not ________________________________//
 

@@ -12,7 +12,10 @@ const Authentication = async (req, res, next) => {
             //-----if token is invalid-------/
             if (invalid) return res.status(401).send({ status: false, message: "Invalid token !" })
             //----if token valid----//
-            if (valid) next()
+            if (valid) {
+            req["userId"] = valid.userId
+            next()
+            }
         })
     } catch (error) {
         return res.status(500).send({ sataus: false, message: error.message })
